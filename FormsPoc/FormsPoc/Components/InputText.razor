@@ -6,7 +6,7 @@
         @Id
     </div>
     <div>
-        <input class="@CssClass" maxlength="@MaxLength" minlength="@MinLength" @onchange="HandleChange" type="text" value="@ValueAsString" />
+        <input class="@(ValidationState.IsValid ? "valid" : "invalid")" maxlength="@MaxLength" minlength="@MinLength" @onchange="HandleChangeAsync" type="text" value="@ValueAsString" />
     </div>
     <div>
         @if (MinLength.HasValue && MaxLength.HasValue)
@@ -27,12 +27,13 @@
         }
     </div>
     <div>
-        @foreach (var validationMessage in ValidationMessages)
-        {
-            <div>
-                @validationMessage
-            </div>
-        }
+        @ValidationState.IsValid
+    </div>
+    <div>
+        @CssClass
+    </div>
+    <div>
+        @ValidationState.ValidationMessage
     </div>
 </div>
 

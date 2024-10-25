@@ -25,4 +25,9 @@ public partial class Form
             StateHasChanged();
         }
     }
+
+    public void RefreshState()
+    {
+        StateHasChanged();
+    }
 }

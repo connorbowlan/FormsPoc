@@ -6,7 +6,7 @@
         @Id
     </div>
     <div>
-        <input class="@CssClass" @onchange="HandleChange" min="@Min" max="@Max" type="number" value="@Value" />
+        <input class="@(ValidationState.IsValid ? "valid" : "invalid")" @onchange="HandleChangeAsync" min="@Min" max="@Max" type="number" value="@Value" />
     </div>
     <div>
         @if (Min.HasValue)
@@ -27,12 +27,10 @@
         }
     </div>
     <div>
-        @foreach (var validationMessage in ValidationMessages)
-        {
-            <div>
-                @validationMessage
-            </div>
-        }
+        @ValidationState.IsValid
+    </div>
+    <div>
+        @ValidationState.ValidationMessage
     </div>
 </div>
 

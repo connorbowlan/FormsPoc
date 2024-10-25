@@ -5,10 +5,9 @@
 
 <Form>
     <BoundInputs>
-        <InputText @bind-Value="Name" MaxLength="10" Id="Name" OnChange="HandleNameChanged"/>
-        <InputNumber @bind-Value="Age" Max="max" Id="Age" OnChange="HandleAgeChanged"/>
+        <InputText @bind-Value="Name" MaxLength="10" Id="Name" OnValidate="HandleValidateName"/>
+        <InputNumber @bind-Value="Age" Max="max" Id="Age" OnValidate="HandleValidateAge"  />
     </BoundInputs>
-
     <InputText @bind-Value="Email" Required="true" Id="Email"/>
 </Form>
 
@@ -22,26 +21,24 @@
 
     public string? Email { get; set; }
 
-    private void HandleNameChanged(IInput input)
+    private CustomValidationState HandleValidateName()
     {
-        input.onchangehitcount++;
-
         if (Name == "Jim")
         {
-            input.SetValidation(false, "are ya running, connor?!");
+            return new CustomValidationState(false, "jim is not allowed");
         }
+
+        return new CustomValidationState(true);
     }
 
-    private void HandleAgeChanged(IInput input)
+    private CustomValidationState HandleValidateAge()
     {
-        input.SetValidation(true);
-
-        input.onchangehitcount++;
-
-        if (Name == "Jim" && Age == 6)
+        if (Age == 6)
         {
-            input.SetValidation(false, "You cant be 6");
+            return new CustomValidationState(false, "cant be 6");
         }
+
+        return new CustomValidationState(true);
     }
 }
 

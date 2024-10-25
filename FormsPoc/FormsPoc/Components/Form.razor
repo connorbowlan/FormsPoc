@@ -14,8 +14,8 @@
             <th>Value</th>
             <th>Required</th>
             <th>Valid</th>
-            <th>OPS Hits</th>
-            <th>ONCH hits</th>
+            <th>ValueChanged Hit Count</th>
+            <th>OPS Hit Count</th>
         </tr>
     </thead>
     <tbody>
@@ -25,9 +25,9 @@
                 <td>@input.Id</td>
                 <td>@input.ValueAsString</td>
                 <td>@input.Required</td>
-                <td>@input.IsValid</td>
-                <td>@input.opsHitCount</td>
-                <td>@input.onchangehitcount</td>
+                <td>@input.ValidationState.IsValid</td>
+                <td>@input.ValueChangedHitCount</td>
+                <td>@input.OnParamsSetHitCount</td>
             </tr>
         }
         <tr>
@@ -35,7 +35,8 @@
             <td></td>
             <td></td>
             <td></td>
-            <td>@Inputs.Sum(input => input.opsHitCount)</td>
+            <td>@Inputs.Sum(input => input.ValueChangedHitCount)</td>
+            <td>@Inputs.Sum(input => input.OnParamsSetHitCount)</td>
         </tr>
     </tbody>
 

@@ -10,31 +10,24 @@ public partial class InputText<TValue> : Input<TValue>
     [Parameter]
     public int? MinLength { get; set; }
 
-    protected override bool IsConfiguredValid(out string? validationMessage)
+    protected override ConfiguredValidationState ConfiguredValidate()
     {
         if (ValueAsString == null)
         {
-            validationMessage = null;
-
-            return true;
+            return new ConfiguredValidationState(true);
         }
 
         if (MinLength.HasValue && ValueAsString.Length < MinLength.Value)
         {
-            validationMessage = $"Must be at least {MinLength.Value} characters.";
 
-            return false;
+            return new ConfiguredValidationState(false, $"Must be at least {MinLength.Value} characters.");
         }
 
         if (MaxLength.HasValue && ValueAsString.Length > MaxLength.Value)
         {
-            validationMessage = $"Must be at most {MaxLength.Value} characters.";
-
-            return false;
+            return new ConfiguredValidationState(false, $"Must be at most {MaxLength.Value} characters.");
         }
 
-        validationMessage = null;
-
-        return true;
+        return new ConfiguredValidationState(true);
     }
 }

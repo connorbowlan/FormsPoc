@@ -10,33 +10,30 @@ public interface IInput
 
     string? Id { get; set; }
 
-    bool IsValid { get; set; }
+    ValidationState ValidationState { get; set; }
 
-    int opsHitCount { get; }
+    int OnParamsSetHitCount { get; }
+
+    int ValueChangedHitCount { get; }
 
     bool Required { get; set; }
 
     string? ValueAsString { get; }
 
-    bool IsInputValid();
+    Task CustomValidate();
 
-    void SetValidation(bool isValid, string? validationMessage = null);
-
-    int onchangehitcount { get; set; }
-
-    EventCallback<IInput> OnChange { get; set; }
 }
 
 public class Input<TValue> : ComponentBase, IInput
 {
-    public HashSet<string> ValidationMessages = [];
-
-    private bool _isValid;
+    public ValidationState ValidationState { get; set; } = null!;
 
     [CascadingParameter]
     public BoundInputs? BoundInputs { get; set; }
 
     public string? CssClass { get; set; }
+
+    public int ValueChangedHitCount { get; set; }
 
     [CascadingParameter]
     public Form? Form { get; set; }
@@ -44,22 +41,13 @@ public class Input<TValue> : ComponentBase, IInput
     [Parameter, EditorRequired]
     public string? Id { get; set; }
 
-    public bool IsValid
-    {
-        get => _isValid;
-        set
-        {
-            CssClass = value ? "valid" : "invalid";
-            _isValid = value;
-        }
-    }
+    public int OnParamsSetHitCount { get; set; } = 0;
 
     [Parameter]
-    public EventCallback<IInput> OnChange { get; set; }
+    public Func<CustomValidationState>? OnValidate { get; set; }
 
-    public int onchangehitcount { get; set; }
-
-    public int opsHitCount { get; set; } = 0;
+    [Parameter]
+    public Func<Task<ValidationState>>? OnValidateAsync { get; set; }
 
     [Parameter]
     public bool Required { get; set; }
@@ -73,7 +61,7 @@ public class Input<TValue> : ComponentBase, IInput
     public EventCallback<TValue?> ValueChanged { get; set; }
 
 
-    public void HandleChange(ChangeEventArgs changeEventArgs)
+    public async Task HandleChangeAsync(ChangeEventArgs changeEventArgs)
     {
         if (!BindConverter.TryConvertTo<TValue>(changeEventArgs.Value, CultureInfo.InvariantCulture, out var newValue))
         {
@@ -81,65 +69,71 @@ public class Input<TValue> : ComponentBase, IInput
         }
 
         Value = newValue;
-        ValueChanged.InvokeAsync(Value);
+        await ValueChanged.InvokeAsync(Value);
 
-        if (BoundInputs != null && BoundInputs.Inputs.Any())
+        if (BoundInputs is { Inputs.Count: > 0 })
         {
             foreach (var input in BoundInputs.Inputs)
             {
-                input.OnChange.InvokeAsync(this);
+                await input.CustomValidate();
             }
         }
         else
         {
-            OnChange.InvokeAsync(this);
+            await CustomValidate();
         }
+
+        ValueChangedHitCount++;
     }
 
-    public bool IsInputValid()
+    public async Task CustomValidate()
     {
-        var isConfiguredValid = IsConfiguredValid(out var validationMessage);
-
-        if (isConfiguredValid && IsRequiredValid())
+        if (OnValidate == null && OnValidateAsync == null)
         {
-            ValidationMessages.Clear();
-
-            return true;
+            return;
         }
 
-        if (!string.IsNullOrEmpty(validationMessage))
+        if (OnValidate != null && OnValidateAsync != null)
         {
-            ValidationMessages.Add(validationMessage);
+            throw new InvalidOperationException("cannot do");
         }
 
-        return false;
+        if (OnValidate != null)
+        {
+            ValidationState = OnValidate.Invoke();
+
+            return;
+        }
+
+        if (OnValidateAsync != null)
+        {
+            ValidationState = await OnValidateAsync.Invoke();
+        }
     }
 
-    public void SetValidation(bool isValid, string? validationMessage = null)
+
+    private void RequiredAndConfiguredValidate()
     {
-        if (isValid)
+        if (ValidationState is { ValidationType: ValidationType.Custom, IsValid: false })
         {
-            ValidationMessages.Clear();
+            return;
         }
-        else
+
+        ValidationState = RequiredValidate();
+
+        if (ValidationState.IsValid == false)
         {
-            if (!string.IsNullOrEmpty(validationMessage))
-            {
-                ValidationMessages.Add(validationMessage);
-            }
+            return;
         }
+
+        ValidationState = ConfiguredValidate();
     }
 
-    protected virtual bool IsConfiguredValid(out string? validationMessage)
-    {
-        validationMessage = null;
-
-        return true;
-    }
+    protected virtual ConfiguredValidationState ConfiguredValidate() => new(true);
 
     protected override void OnInitialized()
     {
-        IsValid = IsInputValid();
+        RequiredAndConfiguredValidate();
 
         Form?.AddInput(this);
         BoundInputs?.AddInput(this);
@@ -147,16 +141,18 @@ public class Input<TValue> : ComponentBase, IInput
 
     protected override void OnParametersSet()
     {
-        opsHitCount++;
+        OnParamsSetHitCount++;
+
+        RequiredAndConfiguredValidate();
     }
 
-    private bool IsRequiredValid()
+    private RequiredValidationState RequiredValidate()
     {
         if (Required && string.IsNullOrEmpty(ValueAsString))
         {
-            return false;
+            return new RequiredValidationState(false);
         }
 
-        return true;
+        return new RequiredValidationState(true);
     }
 }

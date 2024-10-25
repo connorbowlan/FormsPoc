@@ -10,27 +10,21 @@ public partial class InputNumber<TValue> : Input<TValue>
     [Parameter]
     public double? Min { get; set; }
 
-    protected override bool IsConfiguredValid(out string? validationMessage)
+    protected override ConfiguredValidationState ConfiguredValidate()
     {
         if (!string.IsNullOrEmpty(ValueAsString) && double.TryParse(ValueAsString, out var valueAsDouble))
         {
             if (valueAsDouble < Min)
             {
-                validationMessage = $"Value must be greater than or equal to {Min}.";
-
-                return false;
+                return new ConfiguredValidationState(false, $"Value must be greater than or equal to {Min}.");
             }
 
             if (valueAsDouble > Max)
             {
-                validationMessage = $"Value must be less than or equal to {Max}.";
-
-                return false;
+                return new ConfiguredValidationState(false, $"Value must be less than or equal to {Max}.");
             }
         }
 
-        validationMessage = null;
-
-        return true;
+        return new ConfiguredValidationState(true);
     }
 }
