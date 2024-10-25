@@ -1,0 +1,42 @@
+﻿<form>
+    <CascadingValue Value="this">
+        @ChildContent
+    </CascadingValue>
+</form>
+
+<br />
+<br />
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Value</th>
+            <th>Required</th>
+            <th>Valid</th>
+            <th>OPS Hits</th>
+            <th>ONCH hits</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var input in Inputs)
+        {
+            <tr>
+                <td>@input.Id</td>
+                <td>@input.ValueAsString</td>
+                <td>@input.Required</td>
+                <td>@input.IsValid</td>
+                <td>@input.opsHitCount</td>
+                <td>@input.onchangehitcount</td>
+            </tr>
+        }
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>@Inputs.Sum(input => input.opsHitCount)</td>
+        </tr>
+    </tbody>
+
+</table>

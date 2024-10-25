@@ -1,0 +1,39 @@
+﻿@typeparam TValue
+@inherits Input<TValue>
+
+<div>
+    <div>
+        @Id
+    </div>
+    <div>
+        <input class="@CssClass" maxlength="@MaxLength" minlength="@MinLength" @onchange="HandleChange" type="text" value="@ValueAsString" />
+    </div>
+    <div>
+        @if (MinLength.HasValue && MaxLength.HasValue)
+        {
+            <span>&gt;@MinLength.Value and &lt; @MaxLength.Value</span>
+        }
+        else
+        {
+            @if (MinLength.HasValue)
+            {
+                <span>&gt; @MinLength.Value</span>
+            }
+
+            @if (MaxLength.HasValue)
+            {
+                <span>@(ValueAsString?.Length ?? 0)/@MaxLength.Value</span>
+            }
+        }
+    </div>
+    <div>
+        @foreach (var validationMessage in ValidationMessages)
+        {
+            <div>
+                @validationMessage
+            </div>
+        }
+    </div>
+</div>
+
+<br />

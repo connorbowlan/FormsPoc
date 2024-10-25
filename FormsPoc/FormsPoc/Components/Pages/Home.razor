@@ -1,0 +1,70 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+<PageTitle>Home</PageTitle>
+
+<Form>
+    <BoundInputs>
+        <InputText @bind-Value="Name" MaxLength="10" Id="Name" OnChange="HandleNameChanged"/>
+        <InputNumber @bind-Value="Age" Max="max" Id="Age" OnChange="HandleAgeChanged"/>
+    </BoundInputs>
+
+    <InputText @bind-Value="Email" Required="true" Id="Email"/>
+</Form>
+
+@code
+{
+    private int max => Name?.Length ?? 10;
+
+    public string? Name { get; set; } = "Connor";
+
+    public int? Age { get; set; }
+
+    public string? Email { get; set; }
+
+    private void HandleNameChanged(IInput input)
+    {
+        input.onchangehitcount++;
+
+        if (Name == "Jim")
+        {
+            input.SetValidation(false, "are ya running, connor?!");
+        }
+    }
+
+    private void HandleAgeChanged(IInput input)
+    {
+        input.SetValidation(true);
+
+        input.onchangehitcount++;
+
+        if (Name == "Jim" && Age == 6)
+        {
+            input.SetValidation(false, "You cant be 6");
+        }
+    }
+}
+
+
+<style type="text/css">
+    input {
+        padding: 1rem;
+    }
+
+    .valid {
+        border: 1px solid green;
+    }
+
+    .invalid {
+        border: 1px solid red;
+    }
+
+    table {
+        border-spacing: unset;
+    }
+
+        table thead tr th, tbody tr td {
+            border: 1px solid #000;
+            padding: 1rem;
+        }
+</style>

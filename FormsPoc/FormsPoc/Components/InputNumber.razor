@@ -1,0 +1,39 @@
+﻿@typeparam TValue
+@inherits Input<TValue>
+
+<div>
+    <div>
+        @Id
+    </div>
+    <div>
+        <input class="@CssClass" @onchange="HandleChange" min="@Min" max="@Max" type="number" value="@Value" />
+    </div>
+    <div>
+        @if (Min.HasValue)
+        {
+            <span>&gt;= @Min</span>
+
+        }
+
+        @if (Max.HasValue)
+        {
+            <span>&lt;= @Max</span>
+
+        }
+
+        @if (Min.HasValue && Max.HasValue)
+        {
+            <span>@Min-@Max</span>
+        }
+    </div>
+    <div>
+        @foreach (var validationMessage in ValidationMessages)
+        {
+            <div>
+                @validationMessage
+            </div>
+        }
+    </div>
+</div>
+
+<br />
